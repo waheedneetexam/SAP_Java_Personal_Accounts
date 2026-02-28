@@ -1,0 +1,37 @@
+
+---
+spring:
+  config.activate.on-profile: default
+  datasource:
+    url: "jdbc:h2:mem:pricing-db;DB_CLOSE_DELAY=-1"
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  sql.init.platform: h2
+cds:
+  security:
+    mock:
+      users:
+        alice:
+          password: password
+          roles:
+            - admin
+            - authenticated-user
+---
+spring:
+  config.activate.on-profile: hana
+---
+# Keep your existing management/health settings below this line
+management:
+  endpoint:
+    health:
+      show-components: always
+      probes.enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health
+  health:
+    defaults.enabled: false
+    ping.enabled: true
+    db.enabled: true

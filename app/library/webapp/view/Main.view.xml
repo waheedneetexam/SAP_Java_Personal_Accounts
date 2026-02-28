@@ -1,0 +1,183 @@
+<mvc:View
+  controllerName="library.controller.Main"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core">
+  <App>
+    <pages>
+      <Page title="Digital Library Hub" class="hubPage">
+        <content>
+          <VBox class="sapUiSmallMargin" renderType="Bare">
+            <Toolbar>
+              <Title text="Library Operations" level="H3" />
+              <ToolbarSpacer />
+              <Button text="Change Login" icon="sap-icon://employee-lookup" press="onChangeLogin" />
+              <Button text="Refresh All" icon="sap-icon://refresh" type="Emphasized" press="onRefreshAll" />
+            </Toolbar>
+
+            <IconTabBar id="mainTabs" expanded="true" class="sapUiSmallMarginTop">
+              <items>
+                <IconTabFilter key="books" text="Books" icon="sap-icon://book">
+                  <VBox class="sectionBlock">
+                    <Toolbar>
+                      <Title text="Books" level="H4" />
+                      <ToolbarSpacer />
+                      <Button text="Create" type="Accept" press="onCreateBook" />
+                      <Button text="Edit" press="onEditBook" />
+                      <Button text="Delete" type="Reject" press="onDeleteBook" />
+                    </Toolbar>
+                    <Table id="booksTable" mode="SingleSelectLeft" items="{view>/books}">
+                      <columns>
+                        <Column><Text text="Title" /></Column>
+                        <Column><Text text="ISBN" /></Column>
+                        <Column><Text text="Stock" /></Column>
+                        <Column><Text text="Author ID" /></Column>
+                        <Column><Text text="Genre ID" /></Column>
+                      </columns>
+                      <items>
+                        <ColumnListItem>
+                          <cells>
+                            <Text text="{view>title}" />
+                            <Text text="{view>isbn}" />
+                            <ObjectNumber number="{view>stock}" />
+                            <Text text="{view>author_ID}" />
+                            <Text text="{view>genre_ID}" />
+                          </cells>
+                        </ColumnListItem>
+                      </items>
+                    </Table>
+                  </VBox>
+                </IconTabFilter>
+
+                <IconTabFilter key="authors" text="Authors" icon="sap-icon://customer">
+                  <VBox class="sectionBlock">
+                    <Toolbar>
+                      <Title text="Authors" level="H4" />
+                      <ToolbarSpacer />
+                      <Button text="Create" type="Accept" press="onCreateAuthor" />
+                      <Button text="Edit" press="onEditAuthor" />
+                      <Button text="Delete" type="Reject" press="onDeleteAuthor" />
+                    </Toolbar>
+                    <Table id="authorsTable" mode="SingleSelectLeft" items="{view>/authors}">
+                      <columns>
+                        <Column><Text text="Name" /></Column>
+                        <Column><Text text="Biography" /></Column>
+                      </columns>
+                      <items>
+                        <ColumnListItem>
+                          <cells>
+                            <Text text="{view>name}" />
+                            <Text text="{view>biography}" />
+                          </cells>
+                        </ColumnListItem>
+                      </items>
+                    </Table>
+                  </VBox>
+                </IconTabFilter>
+
+                <IconTabFilter key="genres" text="Genres" icon="sap-icon://tags">
+                  <VBox class="sectionBlock">
+                    <Toolbar>
+                      <Title text="Genres" level="H4" />
+                      <ToolbarSpacer />
+                      <Button text="Create" type="Accept" press="onCreateGenre" />
+                      <Button text="Edit" press="onEditGenre" />
+                      <Button text="Delete" type="Reject" press="onDeleteGenre" />
+                    </Toolbar>
+                    <Table id="genresTable" mode="SingleSelectLeft" items="{view>/genres}">
+                      <columns>
+                        <Column><Text text="Name" /></Column>
+                        <Column><Text text="Description" /></Column>
+                      </columns>
+                      <items>
+                        <ColumnListItem>
+                          <cells>
+                            <Text text="{view>name}" />
+                            <Text text="{view>description}" />
+                          </cells>
+                        </ColumnListItem>
+                      </items>
+                    </Table>
+                  </VBox>
+                </IconTabFilter>
+
+                <IconTabFilter key="members" text="Members" icon="sap-icon://group">
+                  <VBox class="sectionBlock">
+                    <Toolbar>
+                      <Title text="Members" level="H4" />
+                    </Toolbar>
+                    <Table id="membersTable" items="{view>/members}">
+                      <columns>
+                        <Column><Text text="Full Name" /></Column>
+                        <Column><Text text="Email" /></Column>
+                      </columns>
+                      <items>
+                        <ColumnListItem>
+                          <cells>
+                            <Text text="{view>fullName}" />
+                            <Text text="{view>email}" />
+                          </cells>
+                        </ColumnListItem>
+                      </items>
+                    </Table>
+                  </VBox>
+                </IconTabFilter>
+
+                <IconTabFilter key="loans" text="Loans" icon="sap-icon://history">
+                  <VBox class="sectionBlock">
+                    <Toolbar>
+                      <Title text="Loans" level="H4" />
+                    </Toolbar>
+                    <Table id="loansTable" items="{view>/loans}">
+                      <columns>
+                        <Column><Text text="Book ID" /></Column>
+                        <Column><Text text="Member ID" /></Column>
+                        <Column><Text text="Loan Date" /></Column>
+                        <Column><Text text="Due Date" /></Column>
+                        <Column><Text text="Returned" /></Column>
+                      </columns>
+                      <items>
+                        <ColumnListItem>
+                          <cells>
+                            <Text text="{view>book_ID}" />
+                            <Text text="{view>member_ID}" />
+                            <Text text="{view>loanDate}" />
+                            <Text text="{view>dueDate}" />
+                            <ObjectStatus text="{= ${view>returned} ? 'Yes' : 'No'}" state="{= ${view>returned} ? 'Success' : 'Warning'}" />
+                          </cells>
+                        </ColumnListItem>
+                      </items>
+                    </Table>
+                  </VBox>
+                </IconTabFilter>
+
+                <IconTabFilter key="borrow" text="Borrow Book" icon="sap-icon://loan">
+                  <VBox class="sectionBlock formBlock">
+                    <Title text="Borrow a Book" level="H4" />
+                    <Label text="Book ID" />
+                    <Select
+                      selectedKey="{view>/borrow/bookId}"
+                      forceSelection="false"
+                      items="{view>/books}">
+                      <core:Item key="{view>ID}" text="{= ${view>title} + ' (' + ${view>isbn} + ')' }" />
+                    </Select>
+                    <Label text="Member ID" />
+                    <Select
+                      selectedKey="{view>/borrow/memberId}"
+                      forceSelection="false"
+                      items="{view>/members}">
+                      <core:Item key="{view>ID}" text="{= ${view>fullName} + ' (' + ${view>email} + ')' }" />
+                    </Select>
+                    <Label text="Loan Days" />
+                    <Input value="{view>/borrow/loanDays}" type="Number" />
+                    <Button text="Submit Borrow Request" type="Emphasized" class="sapUiSmallMarginTop" press="onBorrowBook" />
+                  </VBox>
+                </IconTabFilter>
+              </items>
+            </IconTabBar>
+          </VBox>
+        </content>
+      </Page>
+    </pages>
+  </App>
+</mvc:View>
