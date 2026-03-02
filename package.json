@@ -12,6 +12,7 @@
     "@sap/cds-dk": "^9.5.0"
   },
   "dependencies": {
-    "@cap-js/hana": "^1.7.0"
+    "@cap-js/hana": "^1.7.0",
+    "sqlite3": "^5.1.7"
   }
 }

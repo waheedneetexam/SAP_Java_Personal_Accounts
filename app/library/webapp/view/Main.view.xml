@@ -31,8 +31,8 @@
                         <Column><Text text="Title" /></Column>
                         <Column><Text text="ISBN" /></Column>
                         <Column><Text text="Stock" /></Column>
-                        <Column><Text text="Author ID" /></Column>
-                        <Column><Text text="Genre ID" /></Column>
+                        <Column><Text text="Author" /></Column>
+                        <Column><Text text="Genre" /></Column>
                       </columns>
                       <items>
                         <ColumnListItem>
@@ -40,8 +40,8 @@
                             <Text text="{view>title}" />
                             <Text text="{view>isbn}" />
                             <ObjectNumber number="{view>stock}" />
-                            <Text text="{view>author_ID}" />
-                            <Text text="{view>genre_ID}" />
+                            <Text text="{view>author/name}" />
+                            <Text text="{view>genre/name}" />
                           </cells>
                         </ColumnListItem>
                       </items>
@@ -127,11 +127,13 @@
                   <VBox class="sectionBlock">
                     <Toolbar>
                       <Title text="Loans" level="H4" />
+                      <ToolbarSpacer />
+                      <Button text="Return Selected Loan" type="Emphasized" press="onReturnLoan" />
                     </Toolbar>
-                    <Table id="loansTable" items="{view>/loans}">
+                    <Table id="loansTable" mode="SingleSelectLeft" items="{view>/loans}">
                       <columns>
-                        <Column><Text text="Book ID" /></Column>
-                        <Column><Text text="Member ID" /></Column>
+                        <Column><Text text="Book" /></Column>
+                        <Column><Text text="Member" /></Column>
                         <Column><Text text="Loan Date" /></Column>
                         <Column><Text text="Due Date" /></Column>
                         <Column><Text text="Returned" /></Column>
@@ -139,8 +141,8 @@
                       <items>
                         <ColumnListItem>
                           <cells>
-                            <Text text="{view>book_ID}" />
-                            <Text text="{view>member_ID}" />
+                            <Text text="{view>book/title}" />
+                            <Text text="{view>member/fullName}" />
                             <Text text="{view>loanDate}" />
                             <Text text="{view>dueDate}" />
                             <ObjectStatus text="{= ${view>returned} ? 'Yes' : 'No'}" state="{= ${view>returned} ? 'Success' : 'Warning'}" />
@@ -154,14 +156,14 @@
                 <IconTabFilter key="borrow" text="Borrow Book" icon="sap-icon://loan">
                   <VBox class="sectionBlock formBlock">
                     <Title text="Borrow a Book" level="H4" />
-                    <Label text="Book ID" />
+                    <Label text="Book" />
                     <Select
                       selectedKey="{view>/borrow/bookId}"
                       forceSelection="false"
-                      items="{view>/books}">
-                      <core:Item key="{view>ID}" text="{= ${view>title} + ' (' + ${view>isbn} + ')' }" />
+                      items="{view>/availableBooks}">
+                      <core:Item key="{view>ID}" text="{= ${view>title} + ' (Stock: ' + ${view>stock} + ')' }" />
                     </Select>
-                    <Label text="Member ID" />
+                    <Label text="Member" />
                     <Select
                       selectedKey="{view>/borrow/memberId}"
                       forceSelection="false"

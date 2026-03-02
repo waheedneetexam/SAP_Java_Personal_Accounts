@@ -8,7 +8,9 @@ sap.ui.define([
   "sap/m/Label",
   "sap/m/Input",
   "sap/m/TextArea",
-  "sap/m/VBox"
+  "sap/m/VBox",
+  "sap/m/Select",
+  "sap/ui/core/Item"
 ], function (
   Controller,
   JSONModel,
@@ -19,7 +21,9 @@ sap.ui.define([
   Label,
   Input,
   TextArea,
-  VBox
+  VBox,
+  Select,
+  Item
 ) {
   "use strict";
 
@@ -29,6 +33,7 @@ sap.ui.define([
       this._authHeader = null;
       var oModel = new JSONModel({
         books: [],
+        availableBooks: [],
         authors: [],
         genres: [],
         members: [],
@@ -54,19 +59,33 @@ sap.ui.define([
       }
       try {
         var aResults = await Promise.all([
-          this._fetchCollection("Books?$orderby=title"),
+          this._fetchCollection("Books?$orderby=title&$expand=author($select=ID,name),genre($select=ID,name)"),
           this._fetchCollection("Authors?$orderby=name"),
           this._fetchCollection("Genres?$orderby=name"),
           this._fetchCollection("Members?$orderby=fullName"),
-          this._fetchCollection("Loans?$orderby=createdAt desc")
+          this._fetchCollection("Loans?$orderby=createdAt desc&$expand=book($select=ID,title),member($select=ID,fullName)")
         ]);
 
         var oModel = this.getView().getModel("view");
-        oModel.setProperty("/books", aResults[0]);
+        var aBooks = aResults[0] || [];
+        var aAvailableBooks = aBooks.filter(function (oBook) {
+          return Number(oBook.stock || 0) > 0;
+        });
+
+        oModel.setProperty("/books", aBooks);
+        oModel.setProperty("/availableBooks", aAvailableBooks);
         oModel.setProperty("/authors", aResults[1]);
         oModel.setProperty("/genres", aResults[2]);
         oModel.setProperty("/members", aResults[3]);
         oModel.setProperty("/loans", aResults[4]);
+
+        var oBorrow = oModel.getProperty("/borrow") || {};
+        if (!aAvailableBooks.some(function (oBook) { return oBook.ID === oBorrow.bookId; })) {
+          oModel.setProperty("/borrow/bookId", "");
+        }
+        if (!(aResults[3] || []).some(function (oMember) { return oMember.ID === oBorrow.memberId; })) {
+          oModel.setProperty("/borrow/memberId", "");
+        }
       } catch (e) {
         MessageBox.error(e.message || "Failed to refresh data");
       }
@@ -173,7 +192,7 @@ sap.ui.define([
     onBorrowBook: async function () {
       var oBorrow = this.getView().getModel("view").getProperty("/borrow");
       if (!oBorrow.bookId || !oBorrow.memberId) {
-        MessageBox.warning("Enter both Book ID and Member ID");
+        MessageBox.warning("Select both a Book and a Member");
         return;
       }
 
@@ -186,10 +205,33 @@ sap.ui.define([
             loanDays: Number(oBorrow.loanDays || 14)
           })
         });
-        MessageToast.show("Borrow request submitted");
+        MessageToast.show("Book borrowed successfully");
         this.onRefreshAll();
       } catch (e) {
         MessageBox.error(e.message || "Borrow request failed");
+      }
+    },
+
+    onReturnLoan: async function () {
+      var oRow = this._getSelectedRow("loansTable");
+      if (!oRow) {
+        MessageBox.warning("Select a loan first");
+        return;
+      }
+      if (oRow.returned) {
+        MessageBox.warning("Selected loan is already returned");
+        return;
+      }
+
+      try {
+        await this._request("returnBook", {
+          method: "POST",
+          body: JSON.stringify({ loanId: oRow.ID })
+        });
+        MessageToast.show("Book returned successfully");
+        this.onRefreshAll();
+      } catch (e) {
+        MessageBox.error(e.message || "Return failed");
       }
     },
 
@@ -217,13 +259,38 @@ sap.ui.define([
     },
 
     _openBookDialog: function (sTitle, oInitialData, fnSubmit) {
+      var oModel = this.getView().getModel("view");
+      var aAuthors = oModel.getProperty("/authors") || [];
+      var aGenres = oModel.getProperty("/genres") || [];
+
+      if (!aAuthors.length || !aGenres.length) {
+        MessageBox.warning("Create at least one Author and one Genre before creating or editing Books");
+        return;
+      }
+
       this._openSimpleDialog(sTitle, [
         { key: "title", label: "Title", control: "input", required: true },
         { key: "isbn", label: "ISBN", control: "input", required: true },
         { key: "description", label: "Description", control: "textarea" },
         { key: "stock", label: "Stock", control: "input", type: "Number" },
-        { key: "author_ID", label: "Author ID", control: "input", required: true },
-        { key: "genre_ID", label: "Genre ID", control: "input" }
+        {
+          key: "author_ID",
+          label: "Author",
+          control: "select",
+          required: true,
+          items: aAuthors.map(function (oAuthor) {
+            return { key: oAuthor.ID, text: oAuthor.name };
+          })
+        },
+        {
+          key: "genre_ID",
+          label: "Genre",
+          control: "select",
+          required: true,
+          items: aGenres.map(function (oGenre) {
+            return { key: oGenre.ID, text: oGenre.name };
+          })
+        }
       ], oInitialData, fnSubmit);
     },
 
@@ -240,6 +307,19 @@ sap.ui.define([
             value: oInitialData[oField.key] || "",
             rows: 3,
             width: "100%"
+          });
+        } else if (oField.control === "select") {
+          oControl = new Select({
+            selectedKey: oInitialData[oField.key] || "",
+            width: "100%"
+          });
+
+          if (!oField.required) {
+            oControl.addItem(new Item({ key: "", text: "" }));
+          }
+
+          (oField.items || []).forEach(function (oItem) {
+            oControl.addItem(new Item({ key: oItem.key, text: oItem.text }));
           });
         } else {
           oControl = new Input({
@@ -264,12 +344,25 @@ sap.ui.define([
             try {
               var oPayload = {};
               aFields.forEach(function (oField) {
-                var sVal = mControls[oField.key].getValue().trim();
+                var oControl = mControls[oField.key];
+                var sVal = oField.control === "select"
+                  ? String(oControl.getSelectedKey() || "").trim()
+                  : String(oControl.getValue() || "").trim();
+
                 if (oField.required && !sVal) {
                   throw new Error(oField.label + " is required");
                 }
+
                 if (oField.type === "Number") {
-                  oPayload[oField.key] = sVal === "" ? 0 : Number(sVal);
+                  if (sVal === "") {
+                    oPayload[oField.key] = 0;
+                    return;
+                  }
+                  var nValue = Number(sVal);
+                  if (Number.isNaN(nValue)) {
+                    throw new Error(oField.label + " must be a number");
+                  }
+                  oPayload[oField.key] = nValue;
                 } else if (sVal !== "") {
                   oPayload[oField.key] = sVal;
                 }
@@ -306,11 +399,8 @@ sap.ui.define([
     },
 
     _entityKeyPath: function (sEntity, oRow) {
-      var bDraft = ["Books", "Authors", "Genres", "Members"].indexOf(sEntity) > -1;
-      if (bDraft) {
-        return sEntity + "(ID=" + oRow.ID + ",IsActiveEntity=true)";
-      }
-      return sEntity + "(" + oRow.ID + ")";
+      var sId = String(oRow.ID || "").replace(/'/g, "''");
+      return sEntity + "(ID='" + sId + "')";
     },
 
     _fetchCollection: async function (sPath) {

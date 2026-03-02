@@ -1,5 +1,16 @@
 {
+  "fiori": {
+    "bypass_draft": true
+  },
+  "features": {
+    "assert_integrity": "db"
+  },
   "requires": {
-    "db": "hana"
+    "db": "sqlite"
+  },
+  "[hybrid]": {
+    "requires": {
+      "db": "hana"
+    }
   }
 }
