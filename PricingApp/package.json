@@ -1,0 +1,79 @@
+{
+  "name": "PricingApp",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@cap-js/hana": "^2",
+    "@sap/cds": "^9"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^2"
+  },
+  "scripts": {
+    "start": "cds deploy --to sqlite:db.sqlite && cds-serve",
+    "start:dev": "cds deploy --to sqlite:db.sqlite && cds watch --profile development",
+    "start:prod": "cds-serve --profile production",
+    "start:sqlite": "cds deploy --to sqlite:db.sqlite && cds-serve --profile development",
+    "start:hana": "cds-serve --profile production",
+    "ui:install": "npm --prefix ui install",
+    "ui:dev": "npm --prefix ui run dev",
+    "ui:build": "npm --prefix ui run build"
+  },
+  "cds": {
+    "features": {
+      "assert_integrity": "db"
+    },
+    "requires": {
+      "auth": {
+        "kind": "mocked",
+        "users": {
+          "alice": {
+            "password": "password",
+            "roles": [
+              "PricingViewer",
+              "PricingAnalyst",
+              "PricingManager",
+              "PricingAuditor"
+            ]
+          },
+          "analyst": {
+            "password": "password",
+            "roles": [
+              "PricingViewer",
+              "PricingAnalyst"
+            ]
+          },
+          "viewer": {
+            "password": "password",
+            "roles": [
+              "PricingViewer"
+            ]
+          }
+        }
+      },
+      "db": {
+        "kind": "sqlite",
+        "credentials": {
+          "url": "db.sqlite"
+        }
+      }
+    },
+    "[development]": {
+      "requires": {
+        "db": {
+          "kind": "sqlite",
+          "credentials": {
+            "url": "db.sqlite"
+          }
+        }
+      }
+    },
+    "[production]": {
+      "requires": {
+        "db": {
+          "kind": "hana"
+        }
+      }
+    }
+  }
+}

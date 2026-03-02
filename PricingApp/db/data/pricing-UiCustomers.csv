@@ -1,0 +1,4 @@
+customer_id;name;account_number;segment;region;industry;active
+CUST-0001;Customer 0001;100001;Enterprise;NA;Manufacturing;true
+CUST-0002;Customer 0002;100002;Mid-Market;EMEA;Retail;true
+CUST-0003;Customer 0003;100003;SMB;APJ;Technology;true

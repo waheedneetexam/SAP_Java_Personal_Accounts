@@ -1,4 +1,5 @@
 # Hybrid DB Plan (SQLite + HANA) for CAP
+codex resume 019cac9b-b6c8-7ae2-8dae-9ffb61178856
 
 ## 1. Goal
 Enable the CAP app to:

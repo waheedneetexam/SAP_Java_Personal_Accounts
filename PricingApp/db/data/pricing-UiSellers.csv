@@ -1,0 +1,4 @@
+seller_id;name;territory;manager;active
+SEL-1001;Seller 1001;NA-East;Manager A;true
+SEL-1002;Seller 1002;EMEA-Central;Manager B;true
+SEL-1003;Seller 1003;APJ-North;Manager C;true

@@ -1,0 +1,4 @@
+product_id;sku;name;family;category;price;active
+P-1001;SKU-1001;Compute Node X1;Compute;Servers;1200;true
+P-2040;SKU-2040;Storage Array S4;Storage;Storage;440;true
+P-3300;SKU-3300;Edge Router E3;Network;Routers;880;true
