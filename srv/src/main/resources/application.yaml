@@ -20,7 +20,16 @@ cds:
 ---
 spring:
   config.activate.on-profile: hana
----
+  sql:
+    init:
+      mode: never
+cds:
+  security:
+    mock:
+      enabled: false
+  # datasource + HANA credentials are injected automatically
+  # via VCAP_SERVICES / SAP Service Binding when deployed on CF.
+  # No manual datasource URL needed here.
 # Keep your existing management/health settings below this line
 management:
   endpoint:

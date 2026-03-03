@@ -1,0 +1,43 @@
+
+---
+# Spring Boot profile: hana
+# Activated via: mvn spring-boot:run -Dspring-boot.run.profiles=hana
+#                or SPRING_PROFILES_ACTIVE=hana in CF environment
+spring:
+  config.activate.on-profile: hana
+
+  # H2 auto-configuration must be excluded — HANA uses its own datasource
+  # provided through the SAP CF service binding (VCAP_SERVICES).
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration
+
+  # Do NOT run schema-h2.sql on HANA — HDI container manages the schema.
+  sql:
+    init:
+      mode: never
+
+# CDS Java SDK (cds-feature-hana + cds-starter-cloudfoundry)
+# automatically detects the HANA service binding from VCAP_SERVICES
+# and configures the datasource. No explicit URL needed here.
+cds:
+  security:
+    mock:
+      enabled: false
+    # In production on CF, XSUAA or IAS is bound automatically.
+    # No additional security config required in this file.
+
+# Health endpoint — keep same settings so CF Platform health check works
+management:
+  endpoint:
+    health:
+      show-components: always
+      probes.enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health
+  health:
+    defaults.enabled: false
+    ping.enabled: true
+    db.enabled: true

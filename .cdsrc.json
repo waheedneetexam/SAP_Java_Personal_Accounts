@@ -6,11 +6,25 @@
     "assert_integrity": "db"
   },
   "requires": {
-    "db": "sqlite"
+    "db": {
+      "kind": "sqlite",
+      "impl": "@cap-js/sqlite"
+    }
   },
-  "[hybrid]": {
+  "[development]": {
     "requires": {
-      "db": "hana"
+      "db": {
+        "kind": "sqlite",
+        "impl": "@cap-js/sqlite"
+      }
+    }
+  },
+  "[production]": {
+    "requires": {
+      "db": {
+        "kind": "hana",
+        "impl": "@cap-js/hana"
+      }
     }
   }
 }
