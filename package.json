@@ -7,7 +7,8 @@
   "scripts": {
     "start": "cds-serve",
     "start:sqlite": "cds watch --in-memory",
-    "start:hana": "cds watch --profile production",
+    "start:hana": "cds watch --profile hybrid",
+    "start:hana:prod": "cds watch --profile production,hybrid",
     "build:hana": "cds build --production"
   },
   "devDependencies": {
@@ -15,6 +16,7 @@
     "@sap/cds-dk": "^9.5.0"
   },
   "dependencies": {
-    "@cap-js/hana": "^1.7.0"
+    "@cap-js/hana": "^1.7.0",
+    "@sap/xssec": "^4.12.2"
   }
 }
